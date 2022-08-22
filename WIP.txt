@@ -1,0 +1,22 @@
+
+WIP function that ran into some errors
+
+
+def parse(s):
+  # Breaks up a string of words into separate words and returns a list.
+  currentWord = ""
+  wordList = []
+  for c in s:
+    if (c == " ") or (c == ".") or (c == "!") or (c == "?") or (c == ","):
+      wordList.append(currentWord)
+      if (c == ".") or (c == "!") or (c == "?") or (c == ","):
+        wordList.append(c)
+      currentWord = ""
+    else:
+      currentWord = currentWord + c
+
+  return wordList
+
+print(parse("the quick brown fox jumped over the lazy dog. then, hello world! bonjour world."))
+words = "the quick brown fox jumped over the lazy dog. then, hello world! bonjour world."
+print(words.split())
