@@ -1,8 +1,8 @@
 import random
 import pandas as pd
 import nltk
-nltk.download('punkt')
-nltk.download('stopwords')
+# nltk.download('punkt')
+# nltk.download('stopwords')
 from nltk.classify import NaiveBayesClassifier
 from nltk.corpus import stopwords
 from nltk.classify.util import accuracy
@@ -27,9 +27,11 @@ def split_train_test(data, train_prop):
               specifying the proportion of data in the training set.
         output: A tuple of two lists, (training, testing)
     '''
+    toKeep = int(round(len(data) * (1-train_prop), 0))
+    dataSet = data[0:toKeep]
+    trainingSet = data[toKeep:len(data)]
     # TODO: You will write this function, and change the return value
-    return ([], [])
-
+    return (dataSet, trainingSet)
 
 '''
 Markov Chain below
@@ -66,7 +68,6 @@ def train(s):
 # print(train("Bonjour. C'est moi, Richard, et je suis un étudiant à l'Université de Californie à San Diego. J'ai 18 ans, et j'aime les maths et l'informatique."))
 # model = dictionary; start_word = starting word; num_words = number of words
 
-  
 def generate(model, num_sentences, first_word):
   wordLimit = 0
   sentences = 0
@@ -96,71 +97,87 @@ def startWordList(s):
 
 
 copypasta = open("data/atestthatbreaks.txt").read()
-print(generate(copypasta, 2, "i"))
+# #print(generate(copypasta, 2, "i"))
 '''
 Markov Chain above
 '''
 
 
-# def format_for_classifier(data_list, label):
-#     ''' input: A list of documents represented as text strings
-#                The label of the text strings.
-#         output: a list with one element for each doc in data_list,
-#                 where each entry is a list of two elements:
-#                 [format_sentence(doc), label]
-#     '''
-#     # TODO: Write this function, change the return value
-#     return []
+def format_for_classifier(data_list, label):
+    ''' input: A list of documents represented as text strings
+               The label of the text strings.
+        output: a list with one element for each doc in data_list,
+                where each entry is a list of two elements:
+                [format_sentence(doc), label]
+    '''
+    classifiedList = []
+    currentTuple = []
+    for s in data_list:
+      currentTuple.append(format_sentence(s))
+      currentTuple.append(label)
+      classifiedList.append(currentTuple)
+      currentTuple = []
+    # TODO: Write this function, change the return value
+    return classifiedList
 
-# def classify_reviews():
-#     ''' Perform sentiment classification on movie reviews ''' 
-#     # Read the data from the file
-#     data = pd.read_csv("data/movie_reviews.csv")
+def classify_reviews():
+    ''' Perform sentiment classification on movie reviews ''' 
+    # Read the data from the file
+    data = pd.read_csv("data/movie_reviews.csv")
 
-#     # get the text of the positive and negative reviews only.
-#     # positive and negative will be lists of strings
-#     # For now we use only very positive and very negative reviews.
-#     positive = get_reviews(data, 4)
-#     negative = get_reviews(data, 0)
+    # get the text of the positive and negative reviews only.
+    # positive and negative will be lists of strings
+    # For now we use only very positive and very negative reviews.
+    positive = get_reviews(data, 4)
+    negative = get_reviews(data, 0)
 
-#     # Split each data set into training and testing sets.
-#     # You have to write the function split_train_test
-#     (pos_train_text, pos_test_text) = split_train_test(positive, 0.8)
-#     (neg_train_text, neg_test_text) = split_train_test(negative, 0.8)
+    # Split each data set into training and testing sets.
+    # You have to write the function split_train_test
+    (pos_train_text, pos_test_text) = split_train_test(positive, 0.8)
+    (neg_train_text, neg_test_text) = split_train_test(negative, 0.8)
 
-#     # Format the data to be passed to the classifier.
-#     # You have to write the format_for_classifier function
-#     pos_train = format_for_classifier(pos_train_text, 'pos')
-#     neg_train = format_for_classifier(neg_train_text, 'neg')
+    # Format the data to be passed to the classifier.
+    # You have to write the format_for_classifier function
+    pos_train = format_for_classifier(pos_train_text, 'pos')
+    neg_train = format_for_classifier(neg_train_text, 'neg')
 
-#     # Create the training set by appending the pos and neg training examples
-#     training = pos_train + neg_train
+    # Create the training set by appending the pos and neg training examples
+    training = pos_train + neg_train
 
-#     # Format the testing data for use with the classifier
-#     pos_test = format_for_classifier(pos_test_text, 'pos')
-#     neg_test = format_for_classifier(neg_test_text, 'neg')
-#     # Create the test set
-#     test = pos_test + neg_test
-
-
-#     # Train a Naive Bayes Classifier
-#     # Uncomment the next line once the code above is working
-#     #classifier = NaiveBayesClassifier.train(training)
-
-#     # Uncomment the next two lines once everything above is working
-#     #print("Accuracy of the classifier is: " + str(accuracy(classifier, test)))
-#     #classifier.show_most_informative_features()
-
-#     # TODO: Calculate and print the accuracy on the positive and negative
-#     # documents separately
-#     # You will want to use the function classifier.classify, which takes
-#     # a document formatted for the classifier and returns the classification
-#     # of that document ("pos" or "neg").  For example:
-#     # classifier.classify(format_sentence("I love this movie. It was great!"))
-#     # will (hopefully!) return "pos"
-
-#     # TODO: Print the misclassified examples
+    # Format the testing data for use with the classifier
+    pos_test = format_for_classifier(pos_test_text, 'pos')
+    neg_test = format_for_classifier(neg_test_text, 'neg')
+    # Create the test set
+    test = pos_test + neg_test
 
 
-# if __name__ == "__main__":
-#     classify_reviews()
+    # Train a Naive Bayes Classifier
+    # Uncomment the next line once the code above is working
+    classifier = NaiveBayesClassifier.train(training)
+
+    # Uncomment the next two lines once everything above is working
+    print("Accuracy of the classifier is: " + str(accuracy(classifier, test)))
+    classifier.show_most_informative_features()
+
+    # TODO: Calculate and print the accuracy on the positive and negative
+    # documents separately
+    # You will want to use the function classifier.classify, which takes
+    # a document formatted for the classifier and returns the classification
+    # of that document ("pos" or "neg").  For example:
+    print(classifier.classify(format_sentence("I love this movie. It was great!")))
+    # will (hopefully!) return "pos"
+
+
+    # TODO: Print the misclassified examples
+
+# print(format_for_classifier(copypasta, "pos"))
+
+if __name__ == "__main__":
+    classify_reviews()
+
+
+format_for_classifier(["A good one", "The best!"], "pos")
+'''
+should give
+[[{'A': True, 'good': True, 'one': True}, "pos"], [{'The': True, 'best': True, '!': True}, "pos]]
+'''
